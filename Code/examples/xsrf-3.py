@@ -170,8 +170,8 @@ class Account(Thing):
             downvotes = g.cache.get(self.vote_cache_key(kind))
             if downvotes is None:
                 vote_cls = Vote.rel(Account, content_cls)
-                downvotes = len(list(vote_cls._query(Vote.c._thing1_id == self._id,
-                                                          Vote.c._name == str(-1))))
+                downvotes = len(list(vote_cls._query(Vote.col._thing1_id == self._id,
+                                                     Vote.col._name == str(-1))))
                 g.cache.set(self.vote_cache_key(kind), downvotes)
             return downvotes
 
