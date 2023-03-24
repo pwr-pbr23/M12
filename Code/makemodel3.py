@@ -62,6 +62,10 @@ word_vectors = w2v_model.wv
 
 X_train = numpy.load(f'data/X_train_{mode}_{w2v}_{mode2}.npy', allow_pickle=True)
 y_train = numpy.load(f'data/y_train_{mode}_{w2v}_{mode2}.npy', allow_pickle=True)
+print(type(y_train))
+print(y_train.shape)
+print(numpy.unique(y_train, return_counts=True))
+print(y_train[0])
 X_test = numpy.load(f'data/X_test{mode}_{w2v}_{mode2}.npy', allow_pickle=True)
 y_test = numpy.load(f'data/y_test{mode}_{w2v}_{mode2}.npy', allow_pickle=True)
 X_finaltest = numpy.load(f'data/X_finaltest{mode}_{w2v}_{mode2}.npy', allow_pickle=True)
@@ -146,27 +150,47 @@ class_weights = class_weight.compute_class_weight(class_weight='balanced', class
 history = model.fit(X_train, y_train, epochs=epochs, batch_size=batchsize, verbose=1,)
                     # class_weight=class_weights)  # epochs more are good, batch_size more is good
 
+now = datetime.now()  # current date and time
+nowformat = now.strftime("%H:%M")
+print("saving LSTM model " + mode + ". ", nowformat)
+model.save('model/LSTM_model_' + mode + '.h5')  # creates a HDF5 file 'my_model.h5'
+print("\n\n")
 # validate data on train and test set
 
 for dataset in ["train", "test", "finaltest"]:
     print("Now predicting on " + dataset + " set (" + str(dropout) + " dropout)")
 
     if dataset == "train":
-        yhat_classes = model.predict_classes(X_train, verbose=0)
+        # yhat_classes = numpy.argmax(model.predict(X_train, verbose=1), axis=1)
+        yhat_classes = (model.predict(X_train, verbose=1) > 0.5).astype("int32")
+
+        print("yhat_classes")
+        print(type(yhat_classes))
+        print(yhat_classes.shape)
+        print(numpy.unique(yhat_classes, return_counts=True))
+        print(yhat_classes[0])
         accuracy = accuracy_score(y_train, yhat_classes)
         precision = precision_score(y_train, yhat_classes)
         recall = recall_score(y_train, yhat_classes)
         F1Score = f1_score(y_train, yhat_classes)
 
     if dataset == "test":
-        yhat_classes = model.predict_classes(X_test, verbose=0)
+        # yhat_classes = numpy.argmax(model.predict(X_test, verbose=1), axis=1)
+        yhat_classes = (model.predict(X_test, verbose=1) > 0.5).astype("int32")
+        print("yhat_classes")
+        print(type(yhat_classes))
+        print(yhat_classes.shape)
+        print(numpy.unique(yhat_classes, return_counts=True))
+        print(yhat_classes[0])
         accuracy = accuracy_score(y_test, yhat_classes)
         precision = precision_score(y_test, yhat_classes)
         recall = recall_score(y_test, yhat_classes)
         F1Score = f1_score(y_test, yhat_classes)
 
+
     if dataset == "finaltest":
-        yhat_classes = model.predict_classes(X_finaltest, verbose=0)
+        # yhat_classes = numpy.argmax(model.predict(X_finaltest, verbose=1), axis=1)
+        yhat_classes = (model.predict(X_finaltest, verbose=1) > 0.5).astype("int32")
         accuracy = accuracy_score(y_finaltest, yhat_classes)
         precision = precision_score(y_finaltest, yhat_classes)
         recall = recall_score(y_finaltest, yhat_classes)
@@ -182,4 +206,4 @@ now = datetime.now()  # current date and time
 nowformat = now.strftime("%H:%M")
 print("saving LSTM model " + mode + ". ", nowformat)
 model.save('model/LSTM_model_' + mode + '.h5')  # creates a HDF5 file 'my_model.h5'
-print("\n\n")
+print(" \n\n")
