@@ -268,111 +268,111 @@ print(str(len(X_train)) + " samples in the training set.")
 print(str(len(X_test)) + " samples in the validation set.") 
 print(str(len(X_finaltest)) + " samples in the final test set.")
 
-# print("save numpy")
-# numpy.save(f'data/X_train_{mode}_{w2v}_{mode2}.npy', X_train)
-# numpy.save(f'data/y_train_{mode}_{w2v}_{mode2}.npy', y_train)
-# numpy.save(f'data/X_test{mode}_{w2v}_{mode2}.npy', X_test)
-# numpy.save(f'data/y_test{mode}_{w2v}_{mode2}.npy', y_test)
-# numpy.save(f'data/X_finaltest{mode}_{w2v}_{mode2}.npy', X_finaltest)
-# numpy.save(f'data/y_finaltest{mode}_{w2v}_{mode2}.npy', y_finaltest)
+print("save numpy")
+numpy.save(f'data/X_train_{mode}_{w2v}_{mode2}.npy', X_train)
+numpy.save(f'data/y_train_{mode}_{w2v}_{mode2}.npy', y_train)
+numpy.save(f'data/X_test{mode}_{w2v}_{mode2}.npy', X_test)
+numpy.save(f'data/y_test{mode}_{w2v}_{mode2}.npy', y_test)
+numpy.save(f'data/X_finaltest{mode}_{w2v}_{mode2}.npy', X_finaltest)
+numpy.save(f'data/y_finaltest{mode}_{w2v}_{mode2}.npy', y_finaltest)
   
-csum = 0
-for a in y_train:
-  csum = csum+a
-print("percentage of vulnerable samples: "  + str(int((csum / len(X_train)) * 10000)/100) + "%")
-  
-testvul = 0
-for y in y_test:
-  if y == 1:
-    testvul = testvul+1
-print("absolute amount of vulnerable samples in test set: " + str(testvul))
-
-max_length = fulllength 
-  
-
-#hyperparameters for the LSTM model
-
-dropout = 0.2
-neurons = 100
-optimizer = "adam"
-epochs = 100
-batchsize = 128
-
-now = datetime.now() # current date and time
-nowformat = now.strftime("%H:%M")
-print("Starting LSTM: ", nowformat)
-
-
-print("Dropout: " + str(dropout))
-print("Neurons: " + str(neurons))
-print("Optimizer: " + optimizer)
-print("Epochs: " + str(epochs))
-print("Batch Size: " + str(batchsize))
-print("max length: " + str(max_length))
-
-#padding sequences on the same length
-X_train = pad_sequences(X_train, maxlen=max_length)
-X_train = tensorflow.cast(X_train, tensorflow.float32)
-X_test = pad_sequences(X_test, maxlen=max_length)
-X_finaltest = pad_sequences(X_finaltest, maxlen=max_length)
-
-#creating the model  
-model = Sequential()
-model.add(LSTM(neurons, dropout = dropout, recurrent_dropout = dropout)) #around 50 seems good
-model.add(Dense(1, activation='sigmoid'))
-model.compile(loss=myutils.f1_loss, optimizer='adam', metrics=[myutils.f1])
-
-now = datetime.now() # current date and time
-nowformat = now.strftime("%H:%M")
-print("Compiled LSTM: ", nowformat)
-
-#account with class_weights for the class-imbalanced nature of the underlying data
-class_weights = class_weight.compute_class_weight(class_weight='balanced',classes=numpy.unique(y_train),y=y_train)
-
-#training the model
-model.fit(X_train, y_train, epochs=epochs, batch_size=batchsize, verbose=1,)
-# history = model.fit(X_train, y_train, epochs=epochs, batch_size=batchsize, class_weight=class_weights) #epochs more are good, batch_size more is good
-
-#validate data on train and test set
-
-for dataset in ["train","test","finaltest"]:
-    print("Now predicting on " + dataset + " set (" + str(dropout) + " dropout)")
-    
-    if dataset == "train":
-      yhat_classes = model.predict_classes(X_train, verbose=0)
-      accuracy = accuracy_score(y_train, yhat_classes)
-      precision = precision_score(y_train, yhat_classes)
-      recall = recall_score(y_train, yhat_classes)
-      F1Score = f1_score(y_train, yhat_classes)
-      
-    if dataset == "test":
-      yhat_classes = model.predict_classes(X_test, verbose=0)
-      accuracy = accuracy_score(y_test, yhat_classes)
-      precision = precision_score(y_test, yhat_classes)
-      recall = recall_score(y_test, yhat_classes)
-      F1Score = f1_score(y_test, yhat_classes)
-      
-      
-    if dataset == "finaltest":
-      yhat_classes = model.predict_classes(X_finaltest, verbose=0)
-      accuracy = accuracy_score(y_finaltest, yhat_classes)
-      precision = precision_score(y_finaltest, yhat_classes)
-      recall = recall_score(y_finaltest, yhat_classes)
-      F1Score = f1_score(y_finaltest, yhat_classes)
-      
-    print("Accuracy: " + str(accuracy))
-    print("Precision: " + str(precision))
-    print("Recall: " + str(recall))
-    print('F1 score: %f' % F1Score)
-    print("\n")
-
-
-
-now = datetime.now() # current date and time
-nowformat = now.strftime("%H:%M")
-print("saving LSTM model " + mode + ". ", nowformat)
-model.save('model/LSTM_model_'+mode+'.h5')  # creates a HDF5 file 'my_model.h5'
-print("\n\n")
+# csum = 0
+# for a in y_train:
+#   csum = csum+a
+# print("percentage of vulnerable samples: "  + str(int((csum / len(X_train)) * 10000)/100) + "%")
+#
+# testvul = 0
+# for y in y_test:
+#   if y == 1:
+#     testvul = testvul+1
+# print("absolute amount of vulnerable samples in test set: " + str(testvul))
+#
+# max_length = fulllength
+#
+#
+# #hyperparameters for the LSTM model
+#
+# dropout = 0.2
+# neurons = 100
+# optimizer = "adam"
+# epochs = 100
+# batchsize = 128
+#
+# now = datetime.now() # current date and time
+# nowformat = now.strftime("%H:%M")
+# print("Starting LSTM: ", nowformat)
+#
+#
+# print("Dropout: " + str(dropout))
+# print("Neurons: " + str(neurons))
+# print("Optimizer: " + optimizer)
+# print("Epochs: " + str(epochs))
+# print("Batch Size: " + str(batchsize))
+# print("max length: " + str(max_length))
+#
+# #padding sequences on the same length
+# X_train = pad_sequences(X_train, maxlen=max_length)
+# X_train = tensorflow.cast(X_train, tensorflow.float32)
+# X_test = pad_sequences(X_test, maxlen=max_length)
+# X_finaltest = pad_sequences(X_finaltest, maxlen=max_length)
+#
+# #creating the model
+# model = Sequential()
+# model.add(LSTM(neurons, dropout = dropout, recurrent_dropout = dropout)) #around 50 seems good
+# model.add(Dense(1, activation='sigmoid'))
+# model.compile(loss=myutils.f1_loss, optimizer='adam', metrics=[myutils.f1])
+#
+# now = datetime.now() # current date and time
+# nowformat = now.strftime("%H:%M")
+# print("Compiled LSTM: ", nowformat)
+#
+# #account with class_weights for the class-imbalanced nature of the underlying data
+# class_weights = class_weight.compute_class_weight(class_weight='balanced',classes=numpy.unique(y_train),y=y_train)
+#
+# #training the model
+# model.fit(X_train, y_train, epochs=epochs, batch_size=batchsize, verbose=1,)
+# # history = model.fit(X_train, y_train, epochs=epochs, batch_size=batchsize, class_weight=class_weights) #epochs more are good, batch_size more is good
+#
+# #validate data on train and test set
+#
+# for dataset in ["train","test","finaltest"]:
+#     print("Now predicting on " + dataset + " set (" + str(dropout) + " dropout)")
+#
+#     if dataset == "train":
+#       yhat_classes = model.predict_classes(X_train, verbose=0)
+#       accuracy = accuracy_score(y_train, yhat_classes)
+#       precision = precision_score(y_train, yhat_classes)
+#       recall = recall_score(y_train, yhat_classes)
+#       F1Score = f1_score(y_train, yhat_classes)
+#
+#     if dataset == "test":
+#       yhat_classes = model.predict_classes(X_test, verbose=0)
+#       accuracy = accuracy_score(y_test, yhat_classes)
+#       precision = precision_score(y_test, yhat_classes)
+#       recall = recall_score(y_test, yhat_classes)
+#       F1Score = f1_score(y_test, yhat_classes)
+#
+#
+#     if dataset == "finaltest":
+#       yhat_classes = model.predict_classes(X_finaltest, verbose=0)
+#       accuracy = accuracy_score(y_finaltest, yhat_classes)
+#       precision = precision_score(y_finaltest, yhat_classes)
+#       recall = recall_score(y_finaltest, yhat_classes)
+#       F1Score = f1_score(y_finaltest, yhat_classes)
+#
+#     print("Accuracy: " + str(accuracy))
+#     print("Precision: " + str(precision))
+#     print("Recall: " + str(recall))
+#     print('F1 score: %f' % F1Score)
+#     print("\n")
+#
+#
+#
+# now = datetime.now() # current date and time
+# nowformat = now.strftime("%H:%M")
+# print("saving LSTM model " + mode + ". ", nowformat)
+# model.save('model/LSTM_model_'+mode+'.h5')  # creates a HDF5 file 'my_model.h5'
+# print("\n\n")
 
 
 

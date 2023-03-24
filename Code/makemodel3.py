@@ -1,4 +1,5 @@
 import tensorflow
+from imblearn.over_sampling import SMOTE
 
 import myutils
 import sys
@@ -59,15 +60,30 @@ word_vectors = w2v_model.wv
 
 # X = numpy.load(f"data/Dataset_X_{mode}")
 # y = numpy.load(f"data/Dataset_y_{mode}")
-
+print("Loading X_train, y_train. ")
 X_train = numpy.load(f'data/X_train_{mode}_{w2v}_{mode2}.npy', allow_pickle=True)
 y_train = numpy.load(f'data/y_train_{mode}_{w2v}_{mode2}.npy', allow_pickle=True)
+
+# print(X_train.shape)
+# print(type(X_train))
+# # print(X_train[0])
+#
+# X_train = pad_sequences(X_train, maxlen=fulllength)
+# X_train = tensorflow.cast(X_train, tensorflow.float32)
+#
+# print(X_train.shape)
+# print(X_train[0])
+#
+# exit()
+
 print(type(y_train))
 print(y_train.shape)
 print(numpy.unique(y_train, return_counts=True))
 print(y_train[0])
+print("Loading X_test, y_test. ")
 X_test = numpy.load(f'data/X_test{mode}_{w2v}_{mode2}.npy', allow_pickle=True)
 y_test = numpy.load(f'data/y_test{mode}_{w2v}_{mode2}.npy', allow_pickle=True)
+print("Loading X_finaltest, y_finaltest. ")
 X_finaltest = numpy.load(f'data/X_finaltest{mode}_{w2v}_{mode2}.npy', allow_pickle=True)
 y_finaltest = numpy.load(f'data/y_finaltest{mode}_{w2v}_{mode2}.npy', allow_pickle=True)
 
@@ -122,6 +138,15 @@ print("Start padding squenceses: ", nowformat)
 
 X_train = pad_sequences(X_train, maxlen=max_length)
 X_train = tensorflow.cast(X_train, tensorflow.float32)
+
+# print(X_train[0])
+# print(X_train.shape)
+#
+#
+#
+# smote = SMOTE(random_state=2021)
+# X_train, y_train = smote.fit_resample(X_train, y_train)
+
 X_test = pad_sequences(X_test, maxlen=max_length)
 X_finaltest = pad_sequences(X_finaltest, maxlen=max_length)
 
