@@ -1,3 +1,7 @@
+import sys
+
+if len(sys.argv) > 1:
+    mode = sys.argv[1]
 fulltext = ""
 text = []
 for i in range(0,71):
