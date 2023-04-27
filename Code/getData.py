@@ -1,9 +1,13 @@
-import json
+import ijson
+import ujson as json
 import sys
 import time
 from datetime import datetime
+import threading
+from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
 
 from pydriller import Repository
+from tqdm import tqdm
 
 import myutils
 
@@ -111,7 +115,6 @@ def makechangeobj(changething):
 
 # ===========================================================================
 # main
-
 # load list of all repositories and commits
 with open('PyCommitsWithDiffs.json', 'r') as infile:
     data = json.load(infile)
@@ -119,6 +122,8 @@ with open('PyCommitsWithDiffs.json', 'r') as infile:
 now = datetime.now()  # current date and time
 nowformat = now.strftime("%H:%M")
 print("finished loading ", nowformat)
+
+print(type(data))
 
 progress = 0
 changedict = {}
@@ -128,6 +133,7 @@ mode = "sql"
 if (len(sys.argv) > 1):
     mode = sys.argv[1]
 
+# for mode in tqdm(["remote_code_execution", "redirect"]):
 for mode in ["remote_code_execution", "redirect"]:
 
     if mode == "function_injection":
@@ -203,6 +209,7 @@ for mode in ["remote_code_execution", "redirect"]:
     progress = 0
     datanew = {}
 
+    # for r in tqdm(data, desc=f"mining {mode}"):
     for r in data:
 
         progress = progress + 1
@@ -224,8 +231,8 @@ for mode in ["remote_code_execution", "redirect"]:
         all_irrelevant = True
 
         changeCommits = []
+        # for c in tqdm(data[r], desc="processing commit", leave=False):
         for c in data[r]:
-
             irrelevant = True
             for k in allowedKeywords:
                 if k.lower() in data[r][c]["keyword"].lower():

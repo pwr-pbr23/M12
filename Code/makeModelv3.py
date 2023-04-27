@@ -1,38 +1,27 @@
-import tensorflow
-import torch
-from imblearn.over_sampling import SMOTE
+
 from sklearn.preprocessing import StandardScaler
-from torch import nn, device
-from torch.utils.data import DataLoader, TensorDataset
+
 
 import myutils
 import sys
 import os.path
 import ujson as json
 from datetime import datetime
-import random
-import pickle
+
 import numpy
 from keras.models import Sequential
-from keras.layers import Dense, GlobalMaxPooling1D
+from keras.layers import Dense
 from keras.layers import LSTM
-from keras.preprocessing import sequence
-# from keras import backend as K
-from sklearn.metrics import accuracy_score, ConfusionMatrixDisplay
-from sklearn.metrics import precision_score
-from sklearn.metrics import recall_score
-from sklearn.metrics import f1_score
+
 from sklearn.utils import class_weight
 from tqdm import tqdm
 from keras.utils.data_utils import pad_sequences
 import tensorflow as tf
 from gensim.models import Word2Vec, KeyedVectors
 import numpy as np
-# from keras.layers import CuDNNLSTM as LSTM
 from keras.preprocessing.sequence import TimeseriesGenerator
 from sklearn.metrics import matthews_corrcoef
 
-import pandas as pd
 
 # default mode / type of vulnerability
 mode = "sql"
@@ -113,7 +102,6 @@ def create_sequences(keys, blocks):
         y.append(block[1])
 
         # Pad sequences
-        # with tf.device('/GPU:0'):
     X = pad_sequences(X, maxlen=fulllength, padding='pre', truncating='pre', dtype='float32')
 
     y = np.where(np.array(y) == 0, 1, 0)
@@ -196,30 +184,12 @@ print("Epochs: " + str(epochs))
 print("Batch Size: " + str(batchsize))
 print("max length: " + str(max_length))
 
-# #padding sequences on the same length
-# X_train = pad_sequences(X_train, maxlen=max_length)
-# X_test = pad_sequences(X_test, maxlen=max_length)
-# X_finaltest = pad_sequences(X_finaltest, maxlen=max_length)
-
-# with tf.device('/GPU:0'):
 training_generator = TimeseriesGenerator(X_train, y_train, batch_size=32, length=max_length)
 # creating the model
-# with tf.device('/GPU:0'):
 model = Sequential()
 model.add(LSTM(neurons, dropout=dropout, recurrent_dropout=dropout))  # around 50 seems good
 model.add(Dense(1, activation='sigmoid'))
 model.compile(loss=tf.metrics.binary_crossentropy, optimizer='adam', metrics=[myutils.f1])
-
-from keras.layers import Bidirectional
-# from keras_layer_normalization import QLSTM
-from qlstm_pennylane import QLSTM
-
-# model = Sequential()
-# model.add(Bidirectional(LSTM(neurons, dropout=dropout, recurrent_dropout=dropout)))
-# model.add(GlobalMaxPooling1D())
-# model.add(Dense(1, activation='sigmoid'))
-# model.compile(loss=tf.metrics.binary_crossentropy, optimizer='adam', metrics=[myutils.f1])
-
 
 now = datetime.now()  # current date and time
 nowformat = now.strftime("%H:%M")
@@ -233,25 +203,13 @@ print(type(class_weights))
 print(class_weights)
 
 # training the model
-# with tf.device('/GPU:0'):
 model.fit(X_train, y_train, epochs=epochs, verbose=1, batch_size=batchsize, workers=8, use_multiprocessing=True,
           class_weight=class_weights)
-# history = model.fit(X_train, y_train, epochs=epochs, batch_size=batchsize, class_weight=class_weights) #epochs more are good, batch_size more is good
-
-# from sklearn.naive_bayes import GaussianNB
-#
-# model = GaussianNB()
-#
-# model.fit(X_train, y_train)
-
-# validate data on train and test set
-
 
 for dataset in ["train", "test", "finaltest"]:
     print("Now predicting on " + dataset + " set (" + str(dropout) + " dropout)")
 
     if dataset == "train":
-        # yhat_classes = numpy.argmax(model.predict(X_train, verbose=1), axis=1)
         yhat_classes = (model.predict(X_train, verbose=1) > 0.5).astype("int32")
 
         accuracy = accuracy_score(y_train, yhat_classes)
@@ -262,7 +220,6 @@ for dataset in ["train", "test", "finaltest"]:
         res = tf.math.confusion_matrix(y_train, yhat_classes)
 
     if dataset == "test":
-        # yhat_classes = numpy.argmax(model.predict(X_test, verbose=1), axis=1)
         yhat_classes = (model.predict(X_test, verbose=1) > 0.5).astype("int32")
 
         accuracy = accuracy_score(y_test, yhat_classes)
@@ -273,7 +230,6 @@ for dataset in ["train", "test", "finaltest"]:
         res = tf.math.confusion_matrix(y_test, yhat_classes)
 
     if dataset == "finaltest":
-        # yhat_classes = numpy.argmax(model.predict(X_finaltest, verbose=1), axis=1)
         yhat_classes = (model.predict(X_finaltest, verbose=1) > 0.5).astype("int32")
         accuracy = accuracy_score(y_finaltest, yhat_classes)
         precision = precision_score(y_finaltest, yhat_classes)
