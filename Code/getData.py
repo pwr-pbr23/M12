@@ -116,14 +116,22 @@ def makechangeobj(changething):
 # ===========================================================================
 # main
 # load list of all repositories and commits
-with open('PyCommitsWithDiffs.json', 'r') as infile:
-    data = json.load(infile)
+filename = 'old_PyCommitsWithDiffs.json'
+
+print("loading data")
+data = []
+with open(filename, 'rb') as infile:
+    objects = ijson.items(infile, 'item')
+    for obj in objects:
+        data.append(obj)
 
 now = datetime.now()  # current date and time
 nowformat = now.strftime("%H:%M")
 print("finished loading ", nowformat)
 
+print("typ of data:")
 print(type(data))
+
 
 progress = 0
 changedict = {}
@@ -212,6 +220,9 @@ for mode in ["remote_code_execution", "redirect"]:
     # for r in tqdm(data, desc=f"mining {mode}"):
     for r in data:
 
+        print('type of r')
+        print(type(r))
+
         progress = progress + 1
 
         # check the repository name
@@ -233,6 +244,10 @@ for mode in ["remote_code_execution", "redirect"]:
         changeCommits = []
         # for c in tqdm(data[r], desc="processing commit", leave=False):
         for c in data[r]:
+
+            print('type of c')
+            print(type(c))
+            exit()
             irrelevant = True
             for k in allowedKeywords:
                 if k.lower() in data[r][c]["keyword"].lower():
