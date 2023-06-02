@@ -116,14 +116,8 @@ def makechangeobj(changething):
 # ===========================================================================
 # main
 # load list of all repositories and commits
-filename = 'old_PyCommitsWithDiffs.json'
-
-print("loading data")
-data = []
-with open(filename, 'rb') as infile:
-    objects = ijson.items(infile, 'item')
-    for obj in objects:
-        data.append(obj)
+with open('PyCommitsWithDiffs.json', 'r') as infile:
+    data = json.load(infile)
 
 now = datetime.now()  # current date and time
 nowformat = now.strftime("%H:%M")
@@ -247,7 +241,6 @@ for mode in ["remote_code_execution", "redirect"]:
 
             print('type of c')
             print(type(c))
-            exit()
             irrelevant = True
             for k in allowedKeywords:
                 if k.lower() in data[r][c]["keyword"].lower():
@@ -324,7 +317,7 @@ for mode in ["remote_code_execution", "redirect"]:
                     if not commit.hash in changeCommits:
                         continue
 
-                    for m in commit.modifications:
+                    for m in commit.modified_files:
                         # run through all modifications in the single commit in the repository mining
                         if m.old_path != None and m.source_code_before != None:
                             if not ".py" in m.old_path:

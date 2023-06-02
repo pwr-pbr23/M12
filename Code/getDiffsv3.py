@@ -10,10 +10,10 @@ import concurrent.futures
 from tqdm import tqdm
 
 # get access token
-if not os.path.isfile('access'):
+if not os.path.isfile('access_token'):
     print("please place a Github access token in this directory.")
     sys.exit()
-with open('access', 'r') as accestoken:
+with open('access_token', 'r') as accestoken:
     access = accestoken.readline().replace("\n", "")
 
 # get mined commits
@@ -130,14 +130,8 @@ print(str(total) + " commits modifying python were found.")
 with open('DataFilter.json', 'w') as outfile:
     json.dump(datafilter, outfile)
 
-# save the actual python results
-# Obliczenie liczby elementów w każdym podziale
-chunk_size = math.ceil(len(data) / 10)
+#save the actual python results
+with open('PyCommitsWithDiffsv2.json', 'w') as outfile:
+    json.dump(data, outfile)
 
-# Podział danych na 10 równych części
-chunks = [tuple(data[i:i + chunk_size].values()) for i in range(0, len(data), chunk_size)]
 
-# Zapisanie danych w 10 osobnych plikach JSON
-for i, chunk in enumerate(chunks):
-    with open(f'PyCommitsWithDiffs_part_{i + 1}.json', 'w') as outfile:
-        json.dump(chunk, outfile)

@@ -118,8 +118,8 @@ def makechangeobj(changething):
 # ===========================================================================
 # main
 # load list of all repositories and commits
-# with open('PyCommitsWithDiffs.json', 'r') as infile:
-#     data = json.load(infile)
+with open('PyCommitsWithDiffsv2.json', 'r') as infile:
+    data = json.load(infile)
 
 file_path = 'PyCommitsWithDiffs.json'
 # data = {}
