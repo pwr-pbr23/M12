@@ -1,6 +1,6 @@
 import tensorflow
 import torch
-from imblearn.over_sampling import SMOTE
+# from imblearn.over_sampling import SMOTE
 from sklearn.preprocessing import StandardScaler
 from torch import nn, device
 from torch.utils.data import DataLoader, TensorDataset
