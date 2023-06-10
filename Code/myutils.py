@@ -8,6 +8,7 @@ from PIL import Image
 from PIL import ImageDraw
 from keras import backend as K
 from keras.preprocessing import sequence
+from keras.utils import pad_sequences
 from termcolor import colored
 
 
@@ -600,14 +601,29 @@ def f1(y_true, y_pred):
     return 2 * ((precision * recall) / (precision + recall + K.epsilon()))
 
 
+def mcc(y_true, y_pred):
+    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+    true_negatives = K.sum(K.round(K.clip((1-y_true) * (1-y_pred), 0, 1)))
+    false_positives = K.sum(K.round(K.clip((1-y_true) * y_pred, 0, 1)))
+    false_negatives = K.sum(K.round(K.clip(y_true * (1-y_pred), 0, 1)))
+
+    numerator = (true_positives * true_negatives) - (false_positives * false_negatives)
+    denominator = K.sqrt((true_positives + false_positives) * (true_positives + false_negatives) * (true_negatives + false_positives) * (true_negatives + false_negatives))
+
+    return numerator / (denominator + K.epsilon())
+
+def mcc_loss(y_true, y_pred):
+    return -mcc(y_true, y_pred)
+
+
 def predict(vectorlist, model):
     if (len(vectorlist) > 0):
         one = []
         one.append(vectorlist)
         one = numpy.array(one)
         max_length = 200
-        one = sequence.pad_sequences(one, maxlen=max_length)
-        yhat_probs = model.predict(one, verbose=0)
+        one = pad_sequences(one, maxlen=max_length)
+        yhat_probs = model.predict(one, verbose=1)
         prediction = int(yhat_probs[0][0] * 100000)
         prediction = 0.00001 * prediction
         return prediction
@@ -688,8 +704,8 @@ def getblocksVisual(mode, sourcecode, badpositions, commentareas, fulllength, st
                     if (len(token) > 1):
                         vectorlist = []
                         for t in token:
-                            if t in word_vectors.vocab and t != " ":
-                                vector = w2v_model[t]
+                            if t in word_vectors.key_to_index and t != " ":
+                                vector = word_vectors[t]
                                 vectorlist.append(vector.tolist())
 
                         if len(vectorlist) > 0:
@@ -775,7 +791,7 @@ def getblocksVisual(mode, sourcecode, badpositions, commentareas, fulllength, st
 
     for i in range(1, 100):
         if not os.path.isfile('demo_' + mode + "_" + str(i) + "_" + name + '.png'):
-            img.save('demo_' + mode + "_" + str(i) + "_" + name + '.png')
+            img.save('demo/demo_' + mode + "_" + str(i) + "_" + name + '.png')
             print("saved png.")
             break
     return blocks

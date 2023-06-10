@@ -1,38 +1,28 @@
-import tensorflow
-import torch
 # from imblearn.over_sampling import SMOTE
-from sklearn.preprocessing import StandardScaler
-from torch import nn, device
-from torch.utils.data import DataLoader, TensorDataset
-
-import myutils
-import sys
 import os.path
-import ujson as json
+import sys
 from datetime import datetime
-import random
-import pickle
+
 import numpy
-from keras.models import Sequential
-from keras.layers import Dense, GlobalMaxPooling1D
-from keras.layers import LSTM
-from keras.preprocessing import sequence
-# from keras import backend as K
-from sklearn.metrics import accuracy_score, ConfusionMatrixDisplay
-from sklearn.metrics import precision_score
-from sklearn.metrics import recall_score
-from sklearn.metrics import f1_score
-from sklearn.utils import class_weight
-from tqdm import tqdm
-from keras.utils.data_utils import pad_sequences
-import tensorflow as tf
-from gensim.models import Word2Vec, KeyedVectors
 import numpy as np
+import tensorflow as tf
+import ujson as json
+from gensim.models import KeyedVectors
+from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.layers import Dense
+from keras.layers import LSTM
+from keras.models import Sequential
 # from keras.layers import CuDNNLSTM as LSTM
 from keras.preprocessing.sequence import TimeseriesGenerator
+from keras.utils.data_utils import pad_sequences
+from matplotlib import pyplot as plt
 from sklearn.metrics import matthews_corrcoef
+from sklearn.preprocessing import StandardScaler
+# from keras import backend as K
+from sklearn.utils import class_weight
+from tqdm import tqdm
 
-import pandas as pd
+import myutils
 
 # default mode / type of vulnerability
 mode = "sql"
@@ -133,19 +123,19 @@ def create_sequences_train(keys, blocks):
     # Pad sequences
     X = pad_sequences(X, maxlen=fulllength, padding='pre', truncating='pre', dtype='float32')
 
-    print(X.shape)
-    # Reshape to 2D
-    X = X.reshape(X.shape[0], X.shape[1] * X.shape[1])
-    print(X.shape)
-
-    # Apply standardization
-    scaler = StandardScaler()
-    X = scaler.fit_transform(X)
-    print(X.shape)
-
-    # Reshape back to original 3D shape
-    X = X.reshape(X.shape[0], int(np.sqrt(X.shape[1])), int(np.sqrt(X.shape[1])))
-    print(X.shape)
+    # print(X.shape)
+    # # Reshape to 2D
+    # X = X.reshape(X.shape[0], X.shape[1] * X.shape[1])
+    # print(X.shape)
+    #
+    # # Apply standardization
+    # scaler = StandardScaler()
+    # X = scaler.fit_transform(X)
+    # print(X.shape)
+    #
+    # # Reshape back to original 3D shape
+    # X = X.reshape(X.shape[0], int(np.sqrt(X.shape[1])), int(np.sqrt(X.shape[1])))
+    # print(X.shape)
     # Print mean and standard deviation
     print("Mean:", np.mean(X))
     print("Standard deviation:", np.std(X))
@@ -168,7 +158,7 @@ print(str(len(X_finaltest)) + " samples in the final test set.")
 
 import numpy as np
 from datetime import datetime
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 csum = np.sum(y_train)
 print(f"percentage of vulnerable samples: {int((csum / len(X_train)) * 10000) / 100}%")
@@ -180,10 +170,10 @@ max_length = fulllength
 
 # hyperparameters for the LSTM model
 dropout = 0.2
-neurons = 10
+neurons = 100
 optimizer = "adam"
-epochs = 10
-batchsize = 32
+epochs = 100
+batchsize = 128
 
 now = datetime.now()  # current date and time
 nowformat = now.strftime("%H:%M")
@@ -196,30 +186,13 @@ print("Epochs: " + str(epochs))
 print("Batch Size: " + str(batchsize))
 print("max length: " + str(max_length))
 
-# #padding sequences on the same length
-# X_train = pad_sequences(X_train, maxlen=max_length)
-# X_test = pad_sequences(X_test, maxlen=max_length)
-# X_finaltest = pad_sequences(X_finaltest, maxlen=max_length)
-
-# with tf.device('/GPU:0'):
 training_generator = TimeseriesGenerator(X_train, y_train, batch_size=32, length=max_length)
 # creating the model
-# with tf.device('/GPU:0'):
+
 model = Sequential()
 model.add(LSTM(neurons, dropout=dropout, recurrent_dropout=dropout))  # around 50 seems good
 model.add(Dense(1, activation='sigmoid'))
-model.compile(loss=tf.metrics.binary_crossentropy, optimizer='adam', metrics=[myutils.f1])
-
-from keras.layers import Bidirectional
-# from keras_layer_normalization import QLSTM
-from qlstm_pennylane import QLSTM
-
-# model = Sequential()
-# model.add(Bidirectional(LSTM(neurons, dropout=dropout, recurrent_dropout=dropout)))
-# model.add(GlobalMaxPooling1D())
-# model.add(Dense(1, activation='sigmoid'))
-# model.compile(loss=tf.metrics.binary_crossentropy, optimizer='adam', metrics=[myutils.f1])
-
+model.compile(loss=tf.metrics.binary_crossentropy, optimizer='adam', metrics=[myutils.mcc])
 
 now = datetime.now()  # current date and time
 nowformat = now.strftime("%H:%M")
@@ -232,55 +205,67 @@ class_weights = dict(enumerate(class_weights))
 print(type(class_weights))
 print(class_weights)
 
-# training the model
-# with tf.device('/GPU:0'):
-model.fit(X_train, y_train, epochs=epochs, verbose=1, batch_size=batchsize, workers=8, use_multiprocessing=True,
-          class_weight=class_weights)
-# history = model.fit(X_train, y_train, epochs=epochs, batch_size=batchsize, class_weight=class_weights) #epochs more are good, batch_size more is good
+# Define early stopping
+early_stopping = EarlyStopping(monitor='val_loss', patience=10)
 
-# from sklearn.naive_bayes import GaussianNB
-#
-# model = GaussianNB()
-#
-# model.fit(X_train, y_train)
+# Define checkpoint to save best model
+model_checkpoint = ModelCheckpoint('best_model.h5', monitor='val_loss', save_best_only=True)
 
-# validate data on train and test set
+history = model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=epochs, verbose=1, batch_size=batchsize,
+                    workers=32, use_multiprocessing=True,
+                    class_weight=class_weights, callbacks=[early_stopping, model_checkpoint])
 
+
+# Plotting MCC metric
+plt.plot(history.history['mcc'])
+plt.plot(history.history['val_mcc'])
+plt.title('Model MCC')
+plt.ylabel('MCC')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Validation'], loc='upper left')
+plt.savefig('mcc_plot.png')  # saves the plot to a file
+plt.savefig(f'fig/{mode}_mcc_plot.png')  # saves the plot to a file
+
+# Plotting loss
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('Model Loss')
+plt.ylabel('Loss')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Validation'], loc='upper left')
+plt.savefig('loss_plot.png')  # saves the plot to a file
+plt.savefig(f'fig/{mode}_loss_plot.png')  # saves the plot to a file
+
+
+import pandas as pd
+
+# Initialize the results as an empty list
+results = []
 
 for dataset in ["train", "test", "finaltest"]:
     print("Now predicting on " + dataset + " set (" + str(dropout) + " dropout)")
 
     if dataset == "train":
-        # yhat_classes = numpy.argmax(model.predict(X_train, verbose=1), axis=1)
         yhat_classes = (model.predict(X_train, verbose=1) > 0.5).astype("int32")
+        y_true = y_train
 
-        accuracy = accuracy_score(y_train, yhat_classes)
-        precision = precision_score(y_train, yhat_classes)
-        recall = recall_score(y_train, yhat_classes)
-        F1Score = f1_score(y_train, yhat_classes)
-        MCC = matthews_corrcoef(y_train, yhat_classes)
-        res = tf.math.confusion_matrix(y_train, yhat_classes)
-
-    if dataset == "test":
-        # yhat_classes = numpy.argmax(model.predict(X_test, verbose=1), axis=1)
+    elif dataset == "test":
         yhat_classes = (model.predict(X_test, verbose=1) > 0.5).astype("int32")
+        y_true = y_test
 
-        accuracy = accuracy_score(y_test, yhat_classes)
-        precision = precision_score(y_test, yhat_classes)
-        recall = recall_score(y_test, yhat_classes)
-        F1Score = f1_score(y_test, yhat_classes)
-        MCC = matthews_corrcoef(y_test, yhat_classes)
-        res = tf.math.confusion_matrix(y_test, yhat_classes)
-
-    if dataset == "finaltest":
-        # yhat_classes = numpy.argmax(model.predict(X_finaltest, verbose=1), axis=1)
+    elif dataset == "finaltest":
         yhat_classes = (model.predict(X_finaltest, verbose=1) > 0.5).astype("int32")
-        accuracy = accuracy_score(y_finaltest, yhat_classes)
-        precision = precision_score(y_finaltest, yhat_classes)
-        recall = recall_score(y_finaltest, yhat_classes)
-        F1Score = f1_score(y_finaltest, yhat_classes)
-        MCC = matthews_corrcoef(y_finaltest, yhat_classes)
-        res = tf.math.confusion_matrix(y_finaltest, yhat_classes)
+        y_true = y_finaltest
+
+    accuracy = accuracy_score(y_true, yhat_classes)
+    precision = precision_score(y_true, yhat_classes)
+    recall = recall_score(y_true, yhat_classes)
+    F1Score = f1_score(y_true, yhat_classes)
+    MCC = matthews_corrcoef(y_true, yhat_classes)
+    res = tf.math.confusion_matrix(y_true, yhat_classes)
+
+    # Add the result to the list
+    results.append([dataset, accuracy, precision, recall, F1Score, MCC])
 
     print("Accuracy: " + str(accuracy))
     print("Precision: " + str(precision))
@@ -289,6 +274,22 @@ for dataset in ["train", "test", "finaltest"]:
     print('MCC: %f' % MCC)
     print("Confusion Matrix: " + str(res))
     print("\n")
+
+# Convert the results to a DataFrame
+results_df = pd.DataFrame(results, columns=["Dataset", "Accuracy", "Precision", "Recall", "F1Score", "MCC"])
+
+# Set the DataFrame's name
+results_df.name = mode
+
+print("Results Table: ")
+print(results_df)
+
+# Save to LaTeX
+latex_code = results_df.to_latex(index=False)
+
+# Write the LaTeX code to a .tex file in the "table" directory
+with open('table/' + mode + '.tex', 'w') as f:
+    f.write(latex_code)
 
 now = datetime.now()  # current date and time
 nowformat = now.strftime("%H:%M")

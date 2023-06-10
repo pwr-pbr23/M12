@@ -28,7 +28,7 @@ else:
   threshold = threshold1
 
 mincount = 10
-iterationen = 100
+iterationen = 50
 s = 200
 w2v = "word2vec_"+"withString"+str(mincount) + "-" + str(iterationen) +"-" + str(s)
 w2vmodel = "w2v/" + w2v + ".model"
@@ -64,7 +64,7 @@ if (len(sys.argv) > 1):
 
 
 print(mode)
-model = load_model('model/LSTM_model_'+mode+'.h5',custom_objects={'f1_loss': myutils.f1_loss, 'f1':myutils.f1})
+model = load_model('model/LSTM_model_'+mode+'.h5',custom_objects={'mcc_loss': myutils.mcc_loss, 'f1':myutils.f1})
 
 with open('data/plain_' + mode, 'r') as infile:
   data = json.load(infile)

@@ -1,10 +1,10 @@
 import sys
 import pickle
 import numpy
+from keras.utils import pad_sequences
 from sklearn.metrics import classification_report, accuracy_score
 from keras.models import load_model
-from keras.preprocessing import sequence
-
+import myutils
 
 def load_dataset(mode):
     with open(f"data/{mode}_dataset_finaltest_X", "rb") as fp:
@@ -16,13 +16,13 @@ def load_dataset(mode):
         finaltest_y[i] = 1 if finaltest_y[i] == 0 else 0
 
     max_length = 200
-    finaltest_x = sequence.pad_sequences(finaltest_x, maxlen=max_length)
+    finaltest_x = pad_sequences(finaltest_x, maxlen=max_length)
 
     return finaltest_x, finaltest_y
 
 
 def evaluate_model(mode):
-    model = load_model(f"model/LSTM_model_{mode}.h5", custom_objects={"f1_loss": f1_loss, "f1": f1})
+    model = load_model(f"model/LSTM_model_{mode}.h5", custom_objects={"f1_loss": myutils.f1_loss, "f1": myutils.f1})
     X_finaltest, y_finaltest = load_dataset(mode)
     yhat_classes = model.predict_classes(X_finaltest, verbose=0)
 

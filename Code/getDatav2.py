@@ -398,7 +398,7 @@ modes = [
     "denial",
     "directory_traversal",
     "clickjack",
-    "spoof"
+    "spoof",
 ]
 
 # Przetwarzanie danych dla każdego trybu
