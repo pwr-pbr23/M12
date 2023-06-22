@@ -54,37 +54,37 @@ if not (os.path.isfile(w2vmodel)):
 w2v_model = KeyedVectors.load(w2vmodel)
 word_vectors = w2v_model.wv
 modes = [
-    "function_injection",
+    # "function_injection",
     "remote_code_execution",
-    "cross_frame_scripting",
-    "csv_injection",
+    # "cross_frame_scripting",
+    # "csv_injection",
     "redirect",
-    "hijack",
+    # "hijack",
     "command_injection",
     "sql",
     "xsrf",
     "xss",
-    "replay_attack",
-    "unauthorized",
-    "brute_force",
-    "flooding",
-    "remote_code_execution",
-    "formatstring",
-    "session_fixation",
-    "cross_origin",
-    "buffer overflow",
-    "cache",
-    "eval",
-    "csv",
+    # "replay_attack",
+    # "unauthorized",
+    # "brute_force",
+    # "flooding",
+    # "remote_code_execution",
+    # "formatstring",
+    # "session_fixation",
+    # "cross_origin",
+    # "buffer overflow",
+    # "cache",
+    # "eval",
+    # "csv",
     "path_disclosure",
-    "man-in-the-middle",
-    "smurf",
-    "tampering",
-    "sanitize",
-    "denial",
-    "directory_traversal",
-    "clickjack",
-    "spoof",
+    # "man-in-the-middle",
+    # "smurf",
+    # "tampering",
+    # "sanitize",
+    # "denial",
+    # "directory_traversal",
+    # "clickjack",
+    # "spoof",
 ]
 for mode in modes:
     print(f"starting {mode}")
@@ -252,7 +252,7 @@ for mode in modes:
     plt.xlabel('Epoch')
     plt.legend(['Train', 'Validation'], loc='upper left')
     plt.savefig('mcc_plot.png')  # saves the plot to a file
-    plt.savefig(f'fig/{mode}_mcc_plot.png')  # saves the plot to a file
+    plt.savefig(f'fig/{mode}_better_model_mcc_plot.png')  # saves the plot to a file
     plt.clf()
 
     # Plotting loss
@@ -263,7 +263,7 @@ for mode in modes:
     plt.xlabel('Epoch')
     plt.legend(['Train', 'Validation'], loc='upper left')
     plt.savefig('loss_plot.png')  # saves the plot to a file
-    plt.savefig(f'fig/{mode}_loss_plot.png')  # saves the plot to a file
+    plt.savefig(f'fig/{mode}_better_model_loss_plot.png')  # saves the plot to a file
     plt.clf()
 
 
@@ -320,11 +320,11 @@ for mode in modes:
     latex_code = results_df.style.to_latex(caption=f"Results for {mode} dataset")
 
     # Write the LaTeX code to a .tex file in the "table" directory
-    with open('table/' + mode + '.tex', 'w') as f:
+    with open('table/better_model_' + mode + '.tex', 'w') as f:
         f.write(latex_code)
 
     now = datetime.now()  # current date and time
     nowformat = now.strftime("%H:%M")
     print("saving LSTM model " + mode + ". ", nowformat)
-    model.save('model/LSTM_model_' + mode + '.h5')  # creates a HDF5 file 'my_model.h5'
+    model.save('model/Better_LSTM_model_' + mode + '.h5')  # creates a HDF5 file 'my_model.h5'
     print(" \n\n")
