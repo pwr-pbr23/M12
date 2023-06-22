@@ -335,7 +335,7 @@ class_weights = class_weight.compute_class_weight(class_weight='balanced',classe
 
 #training the model
 model.fit(X_train, y_train, epochs=epochs, batch_size=batchsize, verbose=1,)
-# history = model.fit(X_train, y_train, epochs=epochs, batch_size=batchsize, class_weight=class_weights) #epochs more are good, batch_size more is good
+history = model.fit(X_train, y_train, epochs=epochs, batch_size=batchsize, class_weight=class_weights) #epochs more are good, batch_size more is good
 
 #validate data on train and test set
 
