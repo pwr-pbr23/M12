@@ -66,37 +66,37 @@ if not (os.path.isfile(w2vmodel)):
 w2v_model = KeyedVectors.load(w2vmodel)
 word_vectors = w2v_model.wv
 modes = [
-    "function_injection",
+    # "function_injection",
     "remote_code_execution",
     # "cross_frame_scripting",
-    "csv_injection",
+    # "csv_injection",
     "redirect",
-    "hijack",
+    # "hijack",
     "command_injection",
     "sql",
     "xsrf",
     "xss",
-    "replay_attack",
-    "unauthorized",
-    "brute_force",
-    "flooding",
-    "remote_code_execution",
-    "formatstring",
-    "session_fixation",
-    "cross_origin",
+    # "replay_attack",
+    # "unauthorized",
+    # "brute_force",
+    # "flooding",
+    # "remote_code_execution",
+    # "formatstring",
+    # "session_fixation",
+    # "cross_origin",
     # "buffer overflow",
     # "cache",
-    "eval",
-    "csv",
-    # "path_disclosure",
+    # "eval",
+    # "csv",
+    "path_disclosure",
     # "man-in-the-middle",
-    "smurf",
-    "tampering",
-    "sanitize",
-    "denial",
-    "directory_traversal",
-    "clickjack",
-    "spoof",
+    # "smurf",
+    # "tampering",
+    # "sanitize",
+    # "denial",
+    # "directory_traversal",
+    # "clickjack",
+    # "spoof",
 ]
 for mode in modes:
     print(f"starting {mode}")
@@ -254,7 +254,7 @@ for mode in modes:
             predictions = clf.predict(X_test)
 
             # Zapisz model do pliku
-            dump(clf, f'new_models/{model_name}.joblib')
+            dump(clf, f'new_models/{model_name}_{mode}.joblib')
 
             for metric_idx, metric_name in enumerate(metrics):
                 metric = metrics[metric_name]
