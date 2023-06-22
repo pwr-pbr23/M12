@@ -2,7 +2,7 @@
 import os.path
 import sys
 from datetime import datetime
-
+import seaborn as sns
 import numpy
 import numpy as np
 import tensorflow as tf
@@ -269,6 +269,18 @@ for mode in modes:
     plt.clf()
 
 
+    def plot_confusion_matrix(cm, classes, dataset):
+        """
+        This function prints and plots the confusion matrix.
+        """
+        plt.figure(figsize=(10, 7))
+        sns.heatmap(cm, annot=True, fmt='d')
+        plt.title(f'Confusion matrix for old LST Model {dataset} data, mode {mode}')
+        plt.xlabel('Predicted')
+        plt.ylabel('True')
+        plt.savefig(f'fig/{mode}_old_model_{dataset}_confusion_matrix.png')  # saves the confusion matrix plot to a file
+        plt.clf()
+
     import pandas as pd
 
     # Initialize the results as an empty list
@@ -295,6 +307,7 @@ for mode in modes:
         F1Score = f1_score(y_true, yhat_classes)
         MCC = matthews_corrcoef(y_true, yhat_classes)
         res = tf.math.confusion_matrix(y_true, yhat_classes)
+        plot_confusion_matrix(res, classes=['Class 0', 'Class 1'], dataset=dataset)
 
         # Add the result to the list
         results.append([dataset, round(accuracy, 2), round(precision, 2),

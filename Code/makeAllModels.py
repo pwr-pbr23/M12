@@ -17,14 +17,11 @@ from keras.preprocessing.sequence import TimeseriesGenerator
 from keras.utils.data_utils import pad_sequences
 from matplotlib import pyplot as plt
 from sklearn.metrics import matthews_corrcoef
-from sklearn.preprocessing import StandardScaler
 # from keras import backend as K
 from sklearn.utils import class_weight
 from tqdm import tqdm
-
+from matplotlib import cm
 import myutils
-
-
 
 progress = 0
 count = 0
@@ -266,6 +263,18 @@ for mode in modes:
     plt.savefig(f'fig/{mode}_better_model_loss_plot.png')  # saves the plot to a file
     plt.clf()
 
+    import seaborn as sns
+    def plot_confusion_matrix(cm, classes, dataset):
+        """
+        This function prints and plots the confusion matrix.
+        """
+        plt.figure(figsize=(10, 7))
+        sns.heatmap(cm, annot=True, fmt='d')
+        plt.title(f'Confusion matrix for New LSTM model {dataset} data, mode {mode}')
+        plt.xlabel('Predicted')
+        plt.ylabel('True')
+        plt.savefig(f'fig/{mode}_better_model_{dataset}_confusion_matrix.png')  # saves the confusion matrix plot to a file
+        plt.clf()
 
     import pandas as pd
 
@@ -293,6 +302,7 @@ for mode in modes:
         F1Score = f1_score(y_true, yhat_classes)
         MCC = matthews_corrcoef(y_true, yhat_classes)
         res = tf.math.confusion_matrix(y_true, yhat_classes)
+        plot_confusion_matrix(res, classes=['Class 0', 'Class 1'], dataset=dataset)
 
         # Add the result to the list
         results.append([dataset, round(accuracy, 2), round(precision, 2),

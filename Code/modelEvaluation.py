@@ -1,34 +1,32 @@
-import argparse
 import os
 from datetime import datetime
 
+import os
+import sys
+from datetime import datetime
+
+import numpy as np
 import pandas as pd
+import seaborn as sns
+import ujson as json
 from gensim.models import KeyedVectors
 from imblearn.ensemble import BalancedBaggingClassifier
 from imblearn.metrics import geometric_mean_score
 from imblearn.over_sampling import SMOTE
 from imblearn.under_sampling import RandomUnderSampler
-from keras.utils import pad_sequences
-from scipy.stats import ttest_rel
-from sklearn.decomposition import PCA
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import matthews_corrcoef, accuracy_score, precision_score, recall_score, f1_score, \
-    balanced_accuracy_score
-from sklearn.naive_bayes import GaussianNB
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.neural_network import MLPClassifier
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
-from sklearn.tree import DecisionTreeClassifier
-from tabulate import tabulate
-from tqdm import tqdm
-import sys
-import numpy as np
-import ujson as json
 from joblib import dump
+from keras.utils import pad_sequences
+from matplotlib import pyplot as plt
+from sklearn.decomposition import PCA
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics import matthews_corrcoef, accuracy_score, precision_score, recall_score, f1_score, \
+    balanced_accuracy_score, confusion_matrix
+from sklearn.model_selection import StratifiedKFold
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.tree import DecisionTreeClassifier
+from tqdm import tqdm
+
 import myutils
 
 # default mode / type of vulnerability
@@ -252,6 +250,24 @@ for mode in modes:
             clf = models[model_name]
             clf.fit(X_train, y_train)
             predictions = clf.predict(X_test)
+
+            # Create the confusion matrix
+            conf_mat = confusion_matrix(y_test, predictions)
+
+            # Create a heatmap from the confusion matrix
+            plt.figure(figsize=(10, 7))
+            sns.heatmap(conf_mat, annot=True, fmt='d')
+
+            # Set the title, x-label, and y-label
+            plt.title(f'Confusion matrix for {model_name} on {mode} data')
+            plt.xlabel('Predicted')
+            plt.ylabel('True')
+
+            # Save the confusion matrix plot to a file
+            plt.savefig(f'fig/simple_model_{model_name}_{mode}_confusion_matrix.png')
+
+            # Clear the current figure for the next loop
+            plt.clf()
 
             # Zapisz model do pliku
             dump(clf, f'new_models/{model_name}_{mode}.joblib')
