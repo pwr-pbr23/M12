@@ -8,6 +8,8 @@ Deep Learning on a Natural Codebase for Python_, autorstwa dr. Laury Wartschinsk
 [Link do pracy badawczej](https://www.sciencedirect.com/science/article/pii/S0950584921002421)  
 [Tablica kanban w serwisie Trello](https://trello.com/b/3o7CyCHh/rd)
 
+W folderze Resaults znajduję sie finalna wersja PDF opisującego naszą pracę związaną z reprodukcją.
+
 ### Skład zespołu
 
 - Wojciech Bednarczyk, 252740
