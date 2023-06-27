@@ -12,4 +12,5 @@ Deep Learning on a Natural Codebase for Python_, autorstwa dr. Laury Wartschinsk
 
 - Wojciech Bednarczyk, 252740
 - Szymon Kisiela, 253452
-- Jakub Wierzchowiec, 252738
+  
+<s>- Jakub Wierzchowiec, 252738</s>
