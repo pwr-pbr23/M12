@@ -12,16 +12,17 @@ import ujson as json
 from gensim.models import KeyedVectors
 from imblearn.ensemble import BalancedBaggingClassifier
 from imblearn.metrics import geometric_mean_score
-from imblearn.over_sampling import SMOTE
-from imblearn.under_sampling import RandomUnderSampler
+from imblearn.over_sampling import SMOTE, ADASYN
+from imblearn.under_sampling import RandomUnderSampler, ClusterCentroids, EditedNearestNeighbours
 from joblib import dump
 from keras.utils import pad_sequences
 from matplotlib import pyplot as plt
 from sklearn.decomposition import PCA
+from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics import matthews_corrcoef, accuracy_score, precision_score, recall_score, f1_score, \
     balanced_accuracy_score, confusion_matrix
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, RepeatedStratifiedKFold
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.tree import DecisionTreeClassifier
@@ -65,15 +66,15 @@ w2v_model = KeyedVectors.load(w2vmodel)
 word_vectors = w2v_model.wv
 modes = [
     # "function_injection",
-    "remote_code_execution",
+   "remote_code_execution",
     # "cross_frame_scripting",
     # "csv_injection",
-    "redirect",
+    # "redirect",
     # "hijack",
-    "command_injection",
-    "sql",
-    "xsrf",
-    "xss",
+  #  "command_injection",
+   # "sql",
+    #"xsrf",
+    #"xss",
     # "replay_attack",
     # "unauthorized",
     # "brute_force",
@@ -86,7 +87,7 @@ modes = [
     # "cache",
     # "eval",
     # "csv",
-    "path_disclosure",
+    #"path_disclosure",
     # "man-in-the-middle",
     # "smurf",
     # "tampering",
@@ -198,10 +199,10 @@ for mode in modes:
     # Utwórz model
     models = {
         # 'GNB': GaussianNB(),
-        'KNN': KNeighborsClassifier(metric='manhattan'),
-        # 'GradientBoost': GradientBoostingClassifier(),
+        # 'KNN': KNeighborsClassifier(metric='manhattan', algorithm='auto', n_neighbors=3)
+        'GradientBoost': GradientBoostingClassifier(verbose=1, n_estimators=1000),
         # 'AdaBoost': AdaBoostClassifier(),
-        'BalancedBagging': BalancedBaggingClassifier(DecisionTreeClassifier(max_depth=10), n_estimators=100),
+        # 'BalancedBagging': BalancedBaggingClassifier(DecisionTreeClassifier(max_depth=10), n_estimators=100),
         # 'CART': DecisionTreeClassifier(criterion='gini', max_depth=10, min_samples_split=2),
 
 
@@ -227,14 +228,27 @@ for mode in modes:
     print("Rozpoczęcie uczenia modelu...")
 
     # Ustal liczbę podziałów
-    n_splits = 5
+    n_splits = 2
+    n_repeats = 5
 
     # Utwórz obiekt StratifiedKFold
     skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=0)
 
+    # Utwórz obiekt ReapeatedStratifiedKFold\
+    rskf = RepeatedStratifiedKFold(n_splits=n_splits, n_repeats=n_repeats, random_state=0)
+
     # Create the StandardScaler and PCA objects
     scaler = StandardScaler()
-    pca = PCA(n_components=100)
+    pca = PCA(n_components=50)
+    rus = RandomUnderSampler(random_state=0)
+    #Cluster centroids
+    cc = ClusterCentroids(random_state=0)
+    #Edited Nearest Neighbours (ENN)
+    enn = EditedNearestNeighbours()
+    #SMOTE
+    smote = SMOTE(random_state=0)
+    #ADASYN
+    adasyn = ADASYN(random_state=0)
     scores = np.zeros((len(models), len(metrics), n_splits))
 
     # Przeprowadź walidację krzyżową
@@ -242,8 +256,17 @@ for mode in modes:
         X_train, X_test = X[train_index], X[test_index]
         y_train, y_test = y[train_index], y[test_index]
 
+        # Zastosowanie random undersamplingu na zbiorze treningowym
+        # X_train, y_train = rus.fit_resample(X_train, y_train)
+        # X_train, y_train = cc.fit_resample(X_train, y_train)
+        # X_train, y_train = enn.fit_resample(X_train, y_train)
+        # X_train, y_train = smote.fit_resample(X_train, y_train)
+        # X_train, y_train = adasyn.fit_resample(X_train, y_train)
+
         X_train = pca.fit_transform(X_train)
         X_test = pca.transform(X_test)
+        # X_train = scaler.fit_transform(X_train)
+        # X_test = scaler.transform(X_test)
         # X_train, y_train = rus.fit_resample(X_train, y_train)
 
         for model_idx, model_name in enumerate(models):

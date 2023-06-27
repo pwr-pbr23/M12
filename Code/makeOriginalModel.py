@@ -246,11 +246,11 @@ for mode in modes:
     history = model.fit(X_train, y_train, epochs=epochs, batch_size=batchsize,
                         class_weight=class_weights, verbose=1)  # epochs more are good, batch_size more is good
 
-    # Plotting MCC metric
-    plt.plot(history.history['mcc'])
-    plt.plot(history.history['val_mcc'])
+    # Plotting F1 metric
+    plt.plot(history.history['f1'])
+    plt.plot(history.history['val_f1'])
     plt.title('Model MCC')
-    plt.ylabel('MCC')
+    plt.ylabel('F1')
     plt.xlabel('Epoch')
     plt.legend(['Train', 'Validation'], loc='upper left')
     plt.savefig('mcc_plot.png')  # saves the plot to a file

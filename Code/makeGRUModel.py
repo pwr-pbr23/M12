@@ -4,6 +4,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 import ujson as json
 from gensim.models import KeyedVectors
 from imblearn.metrics import geometric_mean_score
@@ -185,13 +186,34 @@ for mode in modes:
     input_shape = X_train.shape[1:]
     print(input_shape)
 
-    # Tworzymy model
-    model = Sequential()
-    model.add(GRU(50, input_shape=input_shape))
-    model.add(Dense(1, activation='sigmoid'))
+    # hyperparameters for the GRU model
+    dropout = 0.2
+    neurons = 100
+    optimizer = "adam"
+    epochs = 100
+    batchsize = 128
 
-    # Kompilujemy model
-    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=[myutils.mcc])
+    now = datetime.now()  # current date and time
+    nowformat = now.strftime("%H:%M")
+    print("Starting GRU: ", nowformat)
+
+    print("Dropout: " + str(dropout))
+    print("Neurons: " + str(neurons))
+    print("Optimizer: " + optimizer)
+    print("Epochs: " + str(epochs))
+    print("Batch Size: " + str(batchsize))
+    print("max length: " + str(fulllength))
+
+    # creating the model
+
+    model = Sequential()
+    model.add(GRU(neurons, dropout=dropout, recurrent_dropout=dropout))  # around 50 seems good
+    model.add(Dense(1, activation='sigmoid'))
+    model.compile(loss=tf.metrics.binary_crossentropy, optimizer='adam', metrics=[myutils.mcc])
+
+    now = datetime.now()  # current date and time
+    nowformat = now.strftime("%H:%M")
+    print("Compiled GRU: ", nowformat)
 
     # account with class_weights for the class-imbalanced nature of the underlying data
     class_weights = class_weight.compute_class_weight(class_weight='balanced', classes=np.unique(y_train), y=y_train)
@@ -206,9 +228,10 @@ for mode in modes:
     # Define checkpoint to save best model
     model_checkpoint = ModelCheckpoint('best_model.h5', monitor='val_loss', save_best_only=True)
 
-    # Trenujemy model
-    history = model.fit(X_train, y_train, epochs=100, batch_size=32, validation_split=0.2,
-                        workers=8, use_multiprocessing=True, callbacks=[early_stopping, model_checkpoint])
+    history = model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=epochs, verbose=1,
+                        batch_size=batchsize,
+                        workers=32, use_multiprocessing=True,
+                        class_weight=class_weights, callbacks=[early_stopping, model_checkpoint])
 
     # Plotting MCC metric
     plt.plot(history.history['mcc'], marker='o')
