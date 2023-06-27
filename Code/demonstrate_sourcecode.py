@@ -37,15 +37,15 @@ print("time:", nowformat)
 
 
 mincount = 10
-iterationen = 300
+iterationen = 50
 s = 200
 w2v = "word2vec_"+"withString"+str(mincount) + "-" + str(iterationen) +"-" + str(s)
 w2vmodel = "w2v/" + w2v + ".model"
 w2v_model = Word2Vec.load(w2vmodel)
 word_vectors = w2v_model.wv
                 
-
-model = load_model('model/LSTM_model_'+mode+'.h5',custom_objects={'f1_loss': myutils.f1_loss, 'f1':myutils.f1})
+# model = load_model('GRUModel/GRU_model_'+mode+'.h5', custom_objects={'mcc': myutils.mcc})
+model = load_model('model/LSTM_model_'+mode+'.h5',custom_objects={'mcc': myutils.mcc})
 
 
 with open('examples/'+mode+"-"+nr+".py", 'r') as infile:

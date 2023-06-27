@@ -1,0 +1,1 @@
+# example.pyimport osdef greet(name):    print(f"Hello, {name}!")def dangerous_function():    print("This is a dangerous function!")functions = {'greet': greet, 'danger': dangerous_function}if __name__ == "__main__":    user_input = input("Enter the function name you want to run: ")    name = input("Enter your name: ")    functions[user_input](name)  # Line 14

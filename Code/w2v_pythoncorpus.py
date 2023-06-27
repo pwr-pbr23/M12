@@ -25,5 +25,5 @@ for r in repos:
                 files.append(filename)
         
           
-  with open('w2v/pythontraining.txt', 'w') as outfile:
-    outfile.write(pythontraining)
+with open('w2v/pythontraining.txt', 'w') as outfile:
+  outfile.write(pythontraining)

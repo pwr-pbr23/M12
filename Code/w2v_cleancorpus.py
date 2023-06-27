@@ -1,13 +1,14 @@
 import sys
-import StringIO
+# import StringIO
 import subprocess
 import time
 
 #remoe some broken code in the corpus
 
-f=open("w2v/pythontraining.txt", "r")
-contents =f.read()
-contents = contents.replace('\t', '    ')
+
+with open('w2v/pythontraining.txt', 'r', encoding='utf-8') as f:
+  contents =f.read()
+  contents = contents.replace('\t', '    ')
 
 if 'PositiveSmallIntegerField(\n                choices' in contents:
     pos = contents.find('PositiveSmallIntegerField(\n                choices')
